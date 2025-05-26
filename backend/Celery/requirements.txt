@@ -1,0 +1,23 @@
+django
+rollbar
+psycopg2
+gunicorn
+python-dotenv
+mysqlclient
+djangorestframework
+django-cors-headers
+django-storages
+boto3
+redis
+django-redis
+PyJWT
+
+# Celery
+django-celery-beat
+django-celery-results
+
+requests
+aiogram
+mailjet_rest
+pandas
+pillow

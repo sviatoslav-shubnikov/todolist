@@ -1,0 +1,116 @@
+services:
+
+
+  backend_service:
+    build:
+      context: ./backend
+    restart: always
+    volumes:
+      - type: bind # УБРАТЬ
+        source: ./backend # В
+        target: /app # ПРОДАКШЕНЕ
+
+    env_file: 
+      - ./backend/.env
+    
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - main_postgres
+      - celery
+
+    networks:
+      - default
+    dns:
+      - 8.8.8.8
+
+  telegram_service:
+    build:
+      context: ./TelegramBot
+    restart: always
+    volumes:
+
+      - type: bind 
+        source: ./TelegramBot
+        target: /app
+
+      - type: bind
+        source: ./backend
+        target: /app/backend
+
+    env_file: 
+      - ./TelegramBot/.env
+
+
+    depends_on:
+      - main_postgres
+      - redis
+
+    networks:
+      - default
+    dns:
+      - 8.8.8.8
+
+  celery_beat:
+    build:
+      context: ./backend/Celery/
+      dockerfile: Dockerfile.beat
+    volumes:
+      - type: bind
+        source: ./backend/
+        target: /app/backend/
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - redis
+      - backend_service
+    networks:
+      - default
+      
+  main_postgres:
+    image: postgres
+    restart: always
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5432:5432"
+
+
+  celery:
+    build:
+      context: ./backend/Celery/
+
+    volumes:
+      - type: bind # УБРАТЬ
+        source: ./backend/ # В
+        target: /app/backend/ # ПРОДАКШЕНЕ
+
+    env_file: 
+      - ./backend/.env
+
+    depends_on:
+      - redis
+
+    
+  redis:
+    image: 'redis:latest'
+    container_name: 'redis'
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+
+volumes:
+  postgres_data:
+  minio_data:
+
+
+networks:
+  default:
