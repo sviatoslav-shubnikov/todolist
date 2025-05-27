@@ -49,8 +49,6 @@ def send_telegram_notification(self, chat_id: int, message: str):
 @shared_task
 def check_overdue_tasks():
 
-    # ADAK_TZ = pytz.timezone("America/Adak")
-
     from ToDoList.models import Task
     now = localtime()
     overdue_tasks = Task.objects.filter(
